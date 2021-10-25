@@ -45,7 +45,6 @@ public class CsHttpClient<L> {
     this.failureType = requireNonNull(failureType);
   }
 
-  // @Builder
   public CsHttpClient(
       int withNumberOfRetries,
       Class<? extends L> withFailureType,
