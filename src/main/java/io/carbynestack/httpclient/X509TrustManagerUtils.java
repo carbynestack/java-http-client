@@ -17,12 +17,10 @@ import java.util.Arrays;
 import java.util.Optional;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-import lombok.experimental.UtilityClass;
 
-@UtilityClass
-class X509TrustManagerUtils {
+final class X509TrustManagerUtils {
 
-  Optional<X509TrustManager> getX509TrustManager(KeyStore keyStore)
+  static Optional<X509TrustManager> getX509TrustManager(KeyStore keyStore)
       throws NoSuchAlgorithmException, KeyStoreException {
     TrustManagerFactory tmf =
         TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -33,12 +31,12 @@ class X509TrustManagerUtils {
         .findFirst();
   }
 
-  Optional<X509TrustManager> getDefaultX509TrustManager()
+  static Optional<X509TrustManager> getDefaultX509TrustManager()
       throws NoSuchAlgorithmException, KeyStoreException {
     return getX509TrustManager((KeyStore) null);
   }
 
-  Optional<X509TrustManager> getX509TrustManager(File file)
+  static Optional<X509TrustManager> getX509TrustManager(File file)
       throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
     try (FileInputStream fis = new FileInputStream(file)) {
       KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());

@@ -8,21 +8,29 @@ package io.carbynestack.httpclient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
-@RequiredArgsConstructor(staticName = "of")
 public class CsResponseHandler<L, R> implements ResponseHandler<CsResponseEntity<L, R>> {
-
+  private static final Logger log = LoggerFactory.getLogger(CsResponseHandler.class);
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private final Class<? extends L> failureType;
   private final Class<? extends R> successType;
+
+  private CsResponseHandler(Class<? extends L> failureType, Class<? extends R> successType) {
+    this.failureType = failureType;
+    this.successType = successType;
+  }
+
+  public static <L, R> CsResponseHandler<L, R> of(
+      Class<? extends L> failureType, Class<? extends R> successType) {
+    return new CsResponseHandler<>(failureType, successType);
+  }
 
   @Override
   public CsResponseEntity<L, R> handleResponse(HttpResponse response) throws IOException {

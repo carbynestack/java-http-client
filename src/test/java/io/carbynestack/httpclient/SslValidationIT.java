@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Objects;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
-import lombok.NoArgsConstructor;
 import org.apache.http.HttpStatus;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
@@ -41,8 +40,6 @@ public class SslValidationIT {
   private static final String SUCCESS_RESPONSE_STRING = "success";
 
   private final ObjectMapper mapper = new ObjectMapper();
-  private boolean initialized = false;
-  private URI testUri;
 
   @Rule
   public WireMockRule wireMockRule =
@@ -52,6 +49,9 @@ public class SslValidationIT {
               .dynamicHttpsPort()
               .keystorePath(KEY_STORE_A_PATH)
               .keystorePassword(KEY_STORE_A_PASSWORD));
+
+  private boolean initialized = false;
+  private URI testUri;
 
   @Before
   public void initialize() throws Exception {
@@ -152,7 +152,6 @@ public class SslValidationIT {
     assertEquals(HttpStatus.SC_BAD_REQUEST, csResponseEntity.getHttpStatus());
   }
 
-  @NoArgsConstructor
   @JsonIgnoreProperties(ignoreUnknown = true)
   public static class GoogleDirectionsResponse {
     String error_message;

@@ -17,7 +17,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
-import lombok.SneakyThrows;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
@@ -34,6 +33,33 @@ public class CsResponseHandlerTest {
   private static final Random RANDOM = new Random();
   private static final CsResponseHandler<String, String> RESPONSE_HANDLER =
       CsResponseHandler.of(String.class, String.class);
+
+  private static HttpResponse getHttpResponseForObject(int httpStatus, Object obj) {
+    StatusLine statusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, httpStatus, null);
+    HttpResponse response = new BasicHttpResponse(statusLine);
+    if (obj != null) {
+      BasicHttpEntity httpEntity = new BasicHttpEntity();
+      String contentJsonString =
+          obj instanceof String ? obj.toString() : writeObjectAsJsonString(obj);
+      InputStream contentStream =
+          obj == ""
+              ? new ByteArrayInputStream(new byte[0])
+              : new ByteArrayInputStream(contentJsonString.getBytes());
+      httpEntity.setContent(contentStream);
+      httpEntity.setContentLength(contentJsonString.length());
+      response.setEntity(httpEntity);
+    }
+    return response;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <E extends Throwable> String writeObjectAsJsonString(Object obj) throws E {
+    try {
+      return OBJECT_MAPPER.writeValueAsString(obj);
+    } catch (Throwable throwable) {
+      throw (E) throwable;
+    }
+  }
 
   @Test
   public void givenSuccessfulRequestWithValidBody_whenHandlingResponse_thenReturnSuccessful()
@@ -118,28 +144,5 @@ public class CsResponseHandlerTest {
     assertThat(actualResponse.getContent(), equalTo(Either.left(null)));
     assertEquals(httpStatus, actualResponse.getHttpStatus());
     assertNull(actualResponse.getError());
-  }
-
-  private static HttpResponse getHttpResponseForObject(int httpStatus, Object obj) {
-    StatusLine statusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, httpStatus, null);
-    HttpResponse response = new BasicHttpResponse(statusLine);
-    if (obj != null) {
-      BasicHttpEntity httpEntity = new BasicHttpEntity();
-      String contentJsonString =
-          obj instanceof String ? obj.toString() : writeObjectAsJsonString(obj);
-      InputStream contentStream =
-          obj == ""
-              ? new ByteArrayInputStream(new byte[0])
-              : new ByteArrayInputStream(contentJsonString.getBytes());
-      httpEntity.setContent(contentStream);
-      httpEntity.setContentLength(contentJsonString.length());
-      response.setEntity(httpEntity);
-    }
-    return response;
-  }
-
-  @SneakyThrows
-  private static String writeObjectAsJsonString(Object obj) {
-    return OBJECT_MAPPER.writeValueAsString(obj);
   }
 }

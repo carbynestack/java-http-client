@@ -6,6 +6,7 @@
  */
 package io.carbynestack.httpclient;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,11 +19,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.net.ssl.X509TrustManager;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.client.methods.*;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -34,25 +30,29 @@ import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class CsHttpClient<L> {
-
+  private static final Logger log = LoggerFactory.getLogger(CsHttpClient.class);
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private final HttpClientFactory clientFactory;
+  private final Class<? extends L> failureType;
 
-  @NonNull private final Class<? extends L> failureType;
+  CsHttpClient(HttpClientFactory clientFactory, Class<? extends L> failureType) {
+    this.clientFactory = clientFactory;
+    this.failureType = requireNonNull(failureType);
+  }
 
-  @Builder
+  // @Builder
   public CsHttpClient(
       int withNumberOfRetries,
-      @NonNull Class<? extends L> withFailureType,
+      Class<? extends L> withFailureType,
       boolean withoutSslValidation,
       List<File> withTrustedCertificates)
       throws CsHttpClientException {
-    this.failureType = withFailureType;
+    this.failureType = requireNonNull(withFailureType);
     if (withNumberOfRetries < 0) {
       log.debug(
           "Number of retries must not be negative (was {}). Using default value \"0\".",
@@ -114,6 +114,10 @@ public class CsHttpClient<L> {
 
   public static CsHttpClient<String> createDefaultWithRetries(int numberOfRetries) {
     return createWithRetries(numberOfRetries, String.class);
+  }
+
+  public static <L> CsHttpClientBuilder<L> builder() {
+    return new CsHttpClientBuilder<>();
   }
 
   public <R> R getForObject(URI url, Class<R> responseType) throws CsHttpClientException {
@@ -203,5 +207,55 @@ public class CsHttpClient<L> {
     request.setHeader("Accept", "application/json");
     request.setHeader("Content-type", "application/json");
     return request;
+  }
+
+  public static class CsHttpClientBuilder<L> {
+    private int withNumberOfRetries;
+    private Class<? extends L> withFailureType;
+    private boolean withoutSslValidation;
+    private List<File> withTrustedCertificates;
+
+    CsHttpClientBuilder() {}
+
+    public CsHttpClient.CsHttpClientBuilder<L> withNumberOfRetries(int withNumberOfRetries) {
+      this.withNumberOfRetries = withNumberOfRetries;
+      return this;
+    }
+
+    public CsHttpClient.CsHttpClientBuilder<L> withFailureType(Class<? extends L> withFailureType) {
+      this.withFailureType = requireNonNull(withFailureType);
+      return this;
+    }
+
+    public CsHttpClient.CsHttpClientBuilder<L> withoutSslValidation(boolean withoutSslValidation) {
+      this.withoutSslValidation = withoutSslValidation;
+      return this;
+    }
+
+    public CsHttpClient.CsHttpClientBuilder<L> withTrustedCertificates(
+        List<File> withTrustedCertificates) {
+      this.withTrustedCertificates = withTrustedCertificates;
+      return this;
+    }
+
+    public CsHttpClient<L> build() throws CsHttpClientException {
+      return new CsHttpClient<>(
+          this.withNumberOfRetries,
+          this.withFailureType,
+          this.withoutSslValidation,
+          this.withTrustedCertificates);
+    }
+
+    public String toString() {
+      return "CsHttpClient.CsHttpClientBuilder(withNumberOfRetries="
+          + this.withNumberOfRetries
+          + ", withFailureType="
+          + this.withFailureType
+          + ", withoutSslValidation="
+          + this.withoutSslValidation
+          + ", withTrustedCertificates="
+          + this.withTrustedCertificates
+          + ")";
+    }
   }
 }

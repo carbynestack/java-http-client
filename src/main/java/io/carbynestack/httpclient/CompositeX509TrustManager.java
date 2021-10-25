@@ -14,7 +14,6 @@ import java.util.List;
 import javax.net.ssl.X509TrustManager;
 
 class CompositeX509TrustManager implements X509TrustManager {
-
   private final List<X509TrustManager> managers;
 
   CompositeX509TrustManager(List<X509TrustManager> managers) {

@@ -14,14 +14,14 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import org.apache.http.ssl.SSLContextBuilder;
 
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 class ExtendedSSLContextBuilder extends SSLContextBuilder {
-
   private final X509TrustManager trustManager;
+
+  private ExtendedSSLContextBuilder(X509TrustManager trustManager) {
+    this.trustManager = trustManager;
+  }
 
   static ExtendedSSLContextBuilder create(X509TrustManager trustManager) {
     return new ExtendedSSLContextBuilder(trustManager);
