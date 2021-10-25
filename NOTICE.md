@@ -20,4 +20,5 @@ file in the Carbyne Stack
 ### Robert Bosch GmbH
 
 - Becker Sebastian <sebastian.becker@de.bosch.com>
+- Greven David <fixed-term.David.Greven@de.bosch.com>
 - Trieflinger Sven <sven.trieflinger@de.bosch.com>
