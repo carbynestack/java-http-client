@@ -6,12 +6,12 @@
  */
 package io.carbynestack.httpclient;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import net.bytebuddy.utility.RandomString;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class BearerTokenUtilsTest {
 
@@ -19,8 +19,12 @@ public class BearerTokenUtilsTest {
   public void givenToken_whenCreating_thenReturnCorrectHeader() {
     String token = RandomString.make();
     Header h = BearerTokenUtils.createBearerToken(token);
-    assertEquals("incorrect authorization header type", HttpHeaders.AUTHORIZATION, h.getName());
+    assertThat(h.getName())
+        .as("incorrect authorization header type")
+        .isEqualTo(HttpHeaders.AUTHORIZATION);
     String expectedHeaderValue = String.format("Bearer %s", token);
-    assertEquals("incorrect authorization header value", expectedHeaderValue, h.getValue());
+    assertThat(h.getValue())
+        .as("ncorrect authorization header value")
+        .isEqualTo(expectedHeaderValue);
   }
 }

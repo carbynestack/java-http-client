@@ -8,12 +8,12 @@ package io.carbynestack.httpclient;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -22,15 +22,12 @@ import java.util.Collections;
 import java.util.Objects;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
-import lombok.NoArgsConstructor;
 import org.apache.http.HttpStatus;
-import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class SslValidationIT {
-
   private static final String KEY_STORE_A_PATH =
       Objects.requireNonNull(SslValidationIT.class.getClassLoader().getResource("keyStoreA.jks"))
           .getPath();
@@ -40,20 +37,23 @@ public class SslValidationIT {
   private static final String TEST_ENDPOINT = "/test";
   private static final String SUCCESS_RESPONSE_STRING = "success";
 
+  @RegisterExtension
+  static WireMockExtension wireMockExtension =
+      WireMockExtension.newInstance()
+          .options(
+              wireMockConfig()
+                  .dynamicPort()
+                  .dynamicHttpsPort()
+                  .keystorePath(KEY_STORE_A_PATH)
+                  .keystorePassword(KEY_STORE_A_PASSWORD)
+                  .keyManagerPassword(KEY_STORE_A_PASSWORD))
+          .build();
+
   private final ObjectMapper mapper = new ObjectMapper();
   private boolean initialized = false;
   private URI testUri;
 
-  @Rule
-  public WireMockRule wireMockRule =
-      new WireMockRule(
-          wireMockConfig()
-              .dynamicPort()
-              .dynamicHttpsPort()
-              .keystorePath(KEY_STORE_A_PATH)
-              .keystorePassword(KEY_STORE_A_PASSWORD));
-
-  @Before
+  @BeforeEach
   public void initialize() throws Exception {
     SSLContext sslContext = SSLContext.getInstance("TLS");
     sslContext.init(null, null, null);
@@ -61,7 +61,7 @@ public class SslValidationIT {
     if (initialized) {
       return;
     }
-    wireMockRule.stubFor(
+    wireMockExtension.stubFor(
         get(urlPathEqualTo(TEST_ENDPOINT))
             .willReturn(
                 aResponse()
@@ -69,7 +69,10 @@ public class SslValidationIT {
                     .withHeader("Content-Type", "application/json")
                     .withBody(mapper.writeValueAsString(SUCCESS_RESPONSE_STRING))));
     testUri =
-        new URI(String.format("https://localhost:%s%s", wireMockRule.httpsPort(), TEST_ENDPOINT));
+        new URI(
+            String.format(
+                "https://localhost:%s%s",
+                wireMockExtension.getRuntimeInfo().getHttpsPort(), TEST_ENDPOINT));
     initialized = true;
   }
 
@@ -81,7 +84,7 @@ public class SslValidationIT {
             .withFailureType(String.class)
             .withTrustedCertificates(Collections.singletonList(new File(KEY_STORE_A_PATH)))
             .build();
-    assertEquals(SUCCESS_RESPONSE_STRING, csHttpClient.getForObject(testUri, String.class));
+    assertThat(csHttpClient.getForObject(testUri, String.class)).isEqualTo(SUCCESS_RESPONSE_STRING);
   }
 
   @Test
@@ -92,30 +95,28 @@ public class SslValidationIT {
             .withFailureType(String.class)
             .withoutSslValidation(true)
             .build();
-    assertEquals(SUCCESS_RESPONSE_STRING, csHttpClient.getForObject(testUri, String.class));
+    assertThat(csHttpClient.getForObject(testUri, String.class)).isEqualTo(SUCCESS_RESPONSE_STRING);
   }
 
   @Test
   public void givenNonExistingTrustStore_whenBuildingClient_thenThrows() {
     File nonExistingFile = new File("");
-    CsHttpClientException sce =
-        assertThrows(
-            CsHttpClientException.class,
+    assertThatThrownBy(
             () ->
                 CsHttpClient.<String>builder()
                     .withFailureType(String.class)
                     .withTrustedCertificates(Collections.singletonList(nonExistingFile))
-                    .build());
-    assertThat(sce.getCause(), CoreMatchers.instanceOf(IOException.class));
+                    .build())
+        .isExactlyInstanceOf(CsHttpClientException.class)
+        .hasCauseInstanceOf(IOException.class);
   }
 
   @Test
   public void givenUntrustedCertificate_whenGettingObject_thenThrows() {
     CsHttpClient<String> csHttpClient = CsHttpClient.createDefault();
-    CsHttpClientException sce =
-        assertThrows(
-            CsHttpClientException.class, () -> csHttpClient.getForObject(testUri, String.class));
-    assertThat(sce.getCause(), CoreMatchers.instanceOf(SSLHandshakeException.class));
+    assertThatThrownBy(() -> csHttpClient.getForObject(testUri, String.class))
+        .isExactlyInstanceOf(CsHttpClientException.class)
+        .hasCauseExactlyInstanceOf(SSLHandshakeException.class);
   }
 
   @Test
@@ -127,11 +128,11 @@ public class SslValidationIT {
             .build();
     CsResponseEntity<GoogleDirectionsResponse, String> csResponseEntity =
         csHttpClient.getForEntity(new URI(GOOGLE_DIRECTIONS_REST_URI), String.class);
-    assertTrue(
-        "Although the certificate was trustworthy, the request is supposed to return an error.",
-        csResponseEntity.isFailure());
-    assertNotNull(csResponseEntity.getError());
-    assertEquals(HttpStatus.SC_BAD_REQUEST, csResponseEntity.getHttpStatus());
+    assertThat(csResponseEntity.isFailure())
+        .as("Although the certificate was trustworthy, the request is supposed to return an error.")
+        .isTrue();
+    assertThat(csResponseEntity.getError()).isNotNull();
+    assertThat(csResponseEntity.getHttpStatus()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
   }
 
   @Test
@@ -145,14 +146,13 @@ public class SslValidationIT {
             .build();
     CsResponseEntity<GoogleDirectionsResponse, String> csResponseEntity =
         csHttpClient.getForEntity(new URI(GOOGLE_DIRECTIONS_REST_URI), String.class);
-    assertTrue(
-        "Although the certificate was trustworthy, the request is supposed to return an error.",
-        csResponseEntity.isFailure());
-    assertNotNull(csResponseEntity.getError());
-    assertEquals(HttpStatus.SC_BAD_REQUEST, csResponseEntity.getHttpStatus());
+    assertThat(csResponseEntity.isFailure())
+        .as("Although the certificate was trustworthy, the request is supposed to return an error.")
+        .isTrue();
+    assertThat(csResponseEntity.getError()).isNotNull();
+    assertThat(csResponseEntity.getHttpStatus()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
   }
 
-  @NoArgsConstructor
   @JsonIgnoreProperties(ignoreUnknown = true)
   public static class GoogleDirectionsResponse {
     String error_message;
