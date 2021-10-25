@@ -4,27 +4,53 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-name: Build and test artifacts
+name: Artifacts
 on: push
 jobs:
-  test:
+  prepare:
     runs-on: ubuntu-20.04
+    outputs:
+      matrix: ${{ steps.jdk.outputs.matrix }}
+    steps:
+      - name: Split JDK identifier
+        id: jdk
+        run: echo "::set-output name=matrix::{\"jdk\":[{\"distribution\":\"temurin\",\"version\":8},{\"distribution\":\"temurin\",\"version\":17}]}"
+  build:
+    runs-on: ubuntu-20.04
+    needs: prepare
+    strategy:
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v2
-      - name: Set up JDK 8
+      - name: Set up JDK ${{ matrix.jdk.version }}
         uses: actions/setup-java@v2
         with:
-          java-version: '8'
-          distribution: 'temurin'
+          java-version: ${{ matrix.jdk.version }}
+          distribution: ${{ matrix.jdk.distribution }}
           cache: 'maven'
       - name: Build with Maven
         run: mvn install -Dskip.tests --batch-mode --update-snapshots --no-transfer-progress
+  test:
+    runs-on: ubuntu-20.04
+    needs: prepare
+    strategy:
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK ${{ matrix.jdk.version }}
+        uses: actions/setup-java@v2
+        with:
+          java-version: ${{ matrix.jdk.version }}
+          distribution: ${{ matrix.jdk.distribution }}
+          cache: 'maven'
       - name: Run Tests
         run: mvn verify --activate-profiles coverage --batch-mode --no-transfer-progress
       - name: Collect Jacoco reports
+        if: matrix.jdk.version == 8
         run: echo ::set-output name=reports::$(find . -regex '.*/target/site/jacoco/jacoco.xml' | tr '\n' ',' | sed 's/.$//')
         id: jacoco
       - uses: codecov/codecov-action@v2
+        if: matrix.jdk.version == 8
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ steps.jacoco.outputs.reports }}
