@@ -24,7 +24,7 @@ public class BearerTokenUtilsTest {
         .isEqualTo(HttpHeaders.AUTHORIZATION);
     String expectedHeaderValue = String.format("Bearer %s", token);
     assertThat(h.getValue())
-        .as("ncorrect authorization header value")
+        .as("incorrect authorization header value")
         .isEqualTo(expectedHeaderValue);
   }
 }
