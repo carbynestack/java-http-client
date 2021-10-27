@@ -7,7 +7,7 @@
 name: Publish and release
 on:
   workflow_run:
-    workflows: ["Build and test artifacts"]
+    workflows: ["Artifacts"]
     branches:
       - master
     types:
