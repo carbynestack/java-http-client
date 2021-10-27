@@ -6,10 +6,8 @@
  */
 package io.carbynestack.httpclient;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -22,14 +20,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CsHttpClientTest {
-
   private static final String DUMMY_URL = "https://cs-virtual-cloud.com/";
   private static final String DUMMY_BODY = "payload";
   private static final String DUMMY_CONTENT = "response";
@@ -48,11 +45,10 @@ public class CsHttpClientTest {
     IOException cause = new IOException(EXCEPTION_MESSAGE);
     when(closeableHttpClient.execute(any(HttpGet.class), any(CsResponseHandler.class)))
         .thenThrow(cause);
-    CsHttpClientException sce =
-        assertThrows(
-            CsHttpClientException.class, () -> csHttpClient.getForObject(uri, String.class));
+    assertThatThrownBy(() -> csHttpClient.getForObject(uri, String.class))
+        .isExactlyInstanceOf(CsHttpClientException.class)
+        .hasCause(cause);
     verify(closeableHttpClient, times(1)).execute(any(HttpGet.class), any(CsResponseHandler.class));
-    assertEquals(sce.getCause(), cause);
   }
 
   @Test
@@ -63,7 +59,7 @@ public class CsHttpClientTest {
         CsResponseEntity.success(HttpStatus.SC_OK, DUMMY_CONTENT);
     when(closeableHttpClient.execute(any(HttpGet.class), any(CsResponseHandler.class)))
         .thenReturn(response);
-    assertEquals(DUMMY_CONTENT, csHttpClient.getForObject(uri, String.class));
+    assertThat(csHttpClient.getForObject(uri, String.class)).isEqualTo(DUMMY_CONTENT);
     verify(closeableHttpClient, times(1)).execute(any(HttpGet.class), any(CsResponseHandler.class));
   }
 
@@ -76,14 +72,12 @@ public class CsHttpClientTest {
         CsResponseEntity.failed(HttpStatus.SC_INTERNAL_SERVER_ERROR, DUMMY_CONTENT);
     when(closeableHttpClient.execute(any(HttpGet.class), any(CsResponseHandler.class)))
         .thenReturn(response);
-    CsHttpClientException sce =
-        assertThrows(
-            CsHttpClientException.class, () -> csHttpClient.getForObject(uri, String.class));
+    assertThatThrownBy(() -> csHttpClient.getForObject(uri, String.class))
+        .isExactlyInstanceOf(CsHttpClientException.class)
+        .hasMessageContaining("Request has failed")
+        .hasMessageContaining(Integer.toString(HttpStatus.SC_INTERNAL_SERVER_ERROR))
+        .hasMessageContaining(DUMMY_CONTENT);
     verify(closeableHttpClient, times(1)).execute(any(HttpGet.class), any(CsResponseHandler.class));
-    assertThat(sce.getMessage(), containsString("Request has failed"));
-    assertThat(
-        sce.getMessage(), containsString(Integer.toString(HttpStatus.SC_INTERNAL_SERVER_ERROR)));
-    assertThat(sce.getMessage(), containsString(DUMMY_CONTENT));
   }
 
   @Test
@@ -94,7 +88,7 @@ public class CsHttpClientTest {
         CsResponseEntity.success(HttpStatus.SC_OK, DUMMY_CONTENT);
     when(closeableHttpClient.execute(any(HttpGet.class), any(CsResponseHandler.class)))
         .thenReturn(response);
-    assertEquals(response, csHttpClient.getForEntity(uri, String.class));
+    assertThat(csHttpClient.getForEntity(uri, String.class)).isEqualTo(response);
     verify(closeableHttpClient, times(1)).execute(any(HttpGet.class), any(CsResponseHandler.class));
   }
 
@@ -106,11 +100,10 @@ public class CsHttpClientTest {
     IOException cause = new IOException(EXCEPTION_MESSAGE);
     when(closeableHttpClient.execute(any(HttpGet.class), any(CsResponseHandler.class)))
         .thenThrow(cause);
-    CsHttpClientException sce =
-        assertThrows(
-            CsHttpClientException.class, () -> csHttpClient.getForEntity(uri, String.class));
+    assertThatThrownBy(() -> csHttpClient.getForEntity(uri, String.class))
+        .isExactlyInstanceOf(CsHttpClientException.class)
+        .hasCause(cause);
     verify(closeableHttpClient, times(1)).execute(any(HttpGet.class), any(CsResponseHandler.class));
-    assertEquals(sce.getCause(), cause);
   }
 
   @Test
@@ -121,13 +114,11 @@ public class CsHttpClientTest {
     IOException cause = new IOException(EXCEPTION_MESSAGE);
     when(closeableHttpClient.execute(any(HttpPost.class), any(CsResponseHandler.class)))
         .thenThrow(cause);
-    CsHttpClientException sce =
-        assertThrows(
-            CsHttpClientException.class,
-            () -> csHttpClient.postForEntity(uri, DUMMY_BODY, String.class));
+    assertThatThrownBy(() -> csHttpClient.postForEntity(uri, DUMMY_BODY, String.class))
+        .isExactlyInstanceOf(CsHttpClientException.class)
+        .hasCause(cause);
     verify(closeableHttpClient, times(1))
         .execute(any(HttpPost.class), any(CsResponseHandler.class));
-    assertEquals(sce.getCause(), cause);
   }
 
   @Test
@@ -138,7 +129,7 @@ public class CsHttpClientTest {
         CsResponseEntity.success(HttpStatus.SC_OK, DUMMY_CONTENT);
     when(closeableHttpClient.execute(any(HttpPost.class), any(CsResponseHandler.class)))
         .thenReturn(response);
-    assertEquals(DUMMY_CONTENT, csHttpClient.postForObject(uri, DUMMY_BODY, String.class));
+    assertThat(csHttpClient.postForObject(uri, DUMMY_BODY, String.class)).isEqualTo(DUMMY_CONTENT);
     verify(closeableHttpClient, times(1))
         .execute(any(HttpPost.class), any(CsResponseHandler.class));
   }
@@ -151,7 +142,7 @@ public class CsHttpClientTest {
         CsResponseEntity.success(HttpStatus.SC_OK, DUMMY_CONTENT);
     when(closeableHttpClient.execute(any(HttpPost.class), any(CsResponseHandler.class)))
         .thenReturn(response);
-    assertEquals(response, csHttpClient.postForEntity(uri, DUMMY_BODY, String.class));
+    assertThat(csHttpClient.postForEntity(uri, DUMMY_BODY, String.class)).isEqualTo(response);
     verify(closeableHttpClient, times(1))
         .execute(any(HttpPost.class), any(CsResponseHandler.class));
   }
@@ -164,10 +155,10 @@ public class CsHttpClientTest {
     IOException cause = new IOException(EXCEPTION_MESSAGE);
     when(closeableHttpClient.execute(any(HttpPut.class), any(CsResponseHandler.class)))
         .thenThrow(cause);
-    CsHttpClientException sce =
-        assertThrows(CsHttpClientException.class, () -> csHttpClient.put(uri, DUMMY_BODY));
+    assertThatThrownBy(() -> csHttpClient.put(uri, DUMMY_BODY))
+        .isExactlyInstanceOf(CsHttpClientException.class)
+        .hasCause(cause);
     verify(closeableHttpClient, times(1)).execute(any(HttpPut.class), any(CsResponseHandler.class));
-    assertEquals(sce.getCause(), cause);
   }
 
   @Test
@@ -190,13 +181,12 @@ public class CsHttpClientTest {
         CsResponseEntity.failed(HttpStatus.SC_INTERNAL_SERVER_ERROR, null);
     when(closeableHttpClient.execute(any(HttpPut.class), any(CsResponseHandler.class)))
         .thenReturn(response);
-    CsHttpClientException sce =
-        assertThrows(CsHttpClientException.class, () -> csHttpClient.put(uri, DUMMY_BODY));
+    assertThatThrownBy(() -> csHttpClient.put(uri, DUMMY_BODY))
+        .isExactlyInstanceOf(CsHttpClientException.class)
+        .hasMessageContaining("PUT request failed")
+        .getCause()
+        .hasMessageContaining(Integer.toString(HttpStatus.SC_INTERNAL_SERVER_ERROR));
     verify(closeableHttpClient, times(1)).execute(any(HttpPut.class), any(CsResponseHandler.class));
-    assertThat(sce.getMessage(), containsString("PUT request failed"));
-    assertThat(
-        sce.getCause().getMessage(),
-        containsString(Integer.toString(HttpStatus.SC_INTERNAL_SERVER_ERROR)));
   }
 
   @Test
@@ -207,11 +197,11 @@ public class CsHttpClientTest {
     IOException cause = new IOException(EXCEPTION_MESSAGE);
     when(closeableHttpClient.execute(any(HttpDelete.class), any(CsResponseHandler.class)))
         .thenThrow(cause);
-    CsHttpClientException sce =
-        assertThrows(CsHttpClientException.class, () -> csHttpClient.delete(uri));
+    assertThatThrownBy(() -> csHttpClient.delete(uri))
+        .isExactlyInstanceOf(CsHttpClientException.class)
+        .hasCause(cause);
     verify(closeableHttpClient, times(1))
         .execute(any(HttpDelete.class), any(CsResponseHandler.class));
-    assertEquals(sce.getCause(), cause);
   }
 
   @Test
@@ -235,13 +225,12 @@ public class CsHttpClientTest {
         CsResponseEntity.failed(HttpStatus.SC_INTERNAL_SERVER_ERROR, null);
     when(closeableHttpClient.execute(any(HttpDelete.class), any(CsResponseHandler.class)))
         .thenReturn(response);
-    CsHttpClientException sce =
-        assertThrows(CsHttpClientException.class, () -> csHttpClient.delete(uri));
+    assertThatThrownBy(() -> csHttpClient.delete(uri))
+        .isExactlyInstanceOf(CsHttpClientException.class)
+        .hasMessageContaining("DELETE request failed")
+        .getCause()
+        .hasMessageContaining(Integer.toString(HttpStatus.SC_INTERNAL_SERVER_ERROR));
     verify(closeableHttpClient, times(1))
         .execute(any(HttpDelete.class), any(CsResponseHandler.class));
-    assertThat(sce.getMessage(), containsString("DELETE request failed"));
-    assertThat(
-        sce.getCause().getMessage(),
-        containsString(Integer.toString(HttpStatus.SC_INTERNAL_SERVER_ERROR)));
   }
 }

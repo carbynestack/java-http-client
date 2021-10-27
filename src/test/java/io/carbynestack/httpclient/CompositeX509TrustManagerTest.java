@@ -6,6 +6,7 @@
  */
 package io.carbynestack.httpclient;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 
@@ -13,17 +14,16 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import javax.net.ssl.X509TrustManager;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CompositeX509TrustManagerTest {
-
   @Mock private X509TrustManager tma, tmb;
 
-  @Test(expected = CertificateException.class)
+  @Test
   public void givenTwoDistrustingTrustProviders_whenCheckClientTrusted_thenThrows()
       throws CertificateException {
     doThrow(new CertificateException())
@@ -33,7 +33,8 @@ public class CompositeX509TrustManagerTest {
         .when(tmb)
         .checkClientTrusted(any(X509Certificate[].class), any(String.class));
     CompositeX509TrustManager ctm = new CompositeX509TrustManager(Arrays.asList(tma, tmb));
-    ctm.checkClientTrusted(new X509Certificate[0], "");
+    assertThatThrownBy(() -> ctm.checkClientTrusted(new X509Certificate[0], ""))
+        .isExactlyInstanceOf(CertificateException.class);
   }
 
   @Test
@@ -43,7 +44,7 @@ public class CompositeX509TrustManagerTest {
     ctm.checkClientTrusted(new X509Certificate[0], "");
   }
 
-  @Test(expected = CertificateException.class)
+  @Test
   public void givenTwoDistrustingTrustProviders_whenCheckServerTrusted_thenThrows()
       throws CertificateException {
     doThrow(new CertificateException())
@@ -53,7 +54,8 @@ public class CompositeX509TrustManagerTest {
         .when(tmb)
         .checkServerTrusted(any(X509Certificate[].class), any(String.class));
     CompositeX509TrustManager ctm = new CompositeX509TrustManager(Arrays.asList(tma, tmb));
-    ctm.checkServerTrusted(new X509Certificate[0], "");
+    assertThatThrownBy(() -> ctm.checkServerTrusted(new X509Certificate[0], ""))
+        .isExactlyInstanceOf(CertificateException.class);
   }
 
   @Test

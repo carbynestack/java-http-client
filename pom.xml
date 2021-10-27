@@ -55,10 +55,13 @@
         <jackson.version>2.12.3</jackson.version>
         <vavr.version>0.10.3</vavr.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <logback.version>1.2.3</logback.version>
-        <junit.version>4.13.2</junit.version>
-        <mockito.version>3.9.0</mockito.version>
-        <wiremock-standalone.version>2.26.3</wiremock-standalone.version>
+
+        <!-- Test dependency versions -->
+        <junit.version>5.8.1</junit.version>
+        <assertj.version>3.21.0</assertj.version>
+        <logback.version>1.2.6</logback.version>
+        <mockito.version>4.0.0</mockito.version>
+        <wiremock-jre8-standalone.version>2.31.0</wiremock-jre8-standalone.version>
     </properties>
     <dependencies>
         <dependency>
@@ -82,16 +85,34 @@
             <version>${vavr.version}</version>
         </dependency>
 
-        <!--test dependencies-->
+        <!--Test dependencies-->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
@@ -109,8 +130,8 @@
         </dependency>
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock-standalone</artifactId>
-            <version>${wiremock-standalone.version}</version>
+            <artifactId>wiremock-jre8-standalone</artifactId>
+            <version>${wiremock-jre8-standalone.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
