@@ -50,6 +50,8 @@ public class SslValidationIT {
           .build();
 
   private final ObjectMapper mapper = new ObjectMapper();
+  private boolean initialized = false;
+  private URI testUri;
 
   @BeforeEach
   public void initialize() throws Exception {
