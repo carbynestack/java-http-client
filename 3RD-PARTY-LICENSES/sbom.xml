@@ -92,19 +92,6 @@
          </licenses>
       </dependency>
       <dependency>
-         <name>Project Lombok</name>
-         <groupId>org.projectlombok</groupId>
-         <artifactId>lombok</artifactId>
-         <version>1.18.20</version>
-         <projectUrl>https://projectlombok.org</projectUrl>
-         <licenses>
-            <license>
-               <name>The MIT License</name>
-               <url>https://projectlombok.org/LICENSE</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
          <name>SLF4J API Module</name>
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-api</artifactId>

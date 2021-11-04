@@ -54,7 +54,6 @@
         <httpclient.version>4.5.13</httpclient.version>
         <jackson.version>2.12.3</jackson.version>
         <vavr.version>0.10.3</vavr.version>
-        <lombok.version>1.18.20</lombok.version>
         <slf4j.version>1.7.30</slf4j.version>
 
         <!-- Test dependency versions -->
@@ -84,11 +83,6 @@
             <groupId>io.vavr</groupId>
             <artifactId>vavr</artifactId>
             <version>${vavr.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
         </dependency>
 
         <!--Test dependencies-->

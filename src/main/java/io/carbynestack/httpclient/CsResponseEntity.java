@@ -8,23 +8,38 @@ package io.carbynestack.httpclient;
 
 import io.vavr.control.Either;
 import java.io.Serializable;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Value;
 import org.apache.http.HttpStatus;
 
-@Value
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class CsResponseEntity<L, R> implements Serializable {
-
   private static final long serialVersionUID = 6972871863318983069L;
 
-  int httpStatus;
-  Either<L, R> content;
+  private final int httpStatus;
+  private final Either<L, R> content;
 
   private CsResponseEntity() {
     this.httpStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
     this.content = Either.left(null);
+  }
+
+  private CsResponseEntity(int httpStatus, Either<L, R> content) {
+    this.httpStatus = httpStatus;
+    this.content = content;
+  }
+
+  public static <L, R> CsResponseEntity<L, R> success(int httpStatus, R content) {
+    return new CsResponseEntity<>(httpStatus, Either.right(content));
+  }
+
+  public static <L, R> CsResponseEntity<L, R> failed(int httpStatus, L failure) {
+    return new CsResponseEntity<>(httpStatus, Either.left(failure));
+  }
+
+  public int getHttpStatus() {
+    return httpStatus;
+  }
+
+  public Either<L, R> getContent() {
+    return content;
   }
 
   public R get() throws CsHttpClientException {
@@ -52,13 +67,5 @@ public class CsResponseEntity<L, R> implements Serializable {
 
   public boolean isFailure() {
     return !isSuccess();
-  }
-
-  public static <L, R> CsResponseEntity<L, R> success(int httpStatus, R content) {
-    return new CsResponseEntity<>(httpStatus, Either.right(content));
-  }
-
-  public static <L, R> CsResponseEntity<L, R> failed(int httpStatus, L failure) {
-    return new CsResponseEntity<>(httpStatus, Either.left(failure));
   }
 }

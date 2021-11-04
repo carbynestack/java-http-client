@@ -6,17 +6,15 @@
  */
 package io.carbynestack.httpclient;
 
-import lombok.experimental.UtilityClass;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.message.BasicHeader;
 
-@UtilityClass
-public class BearerTokenUtils {
+public final class BearerTokenUtils {
 
-  private final String BEARER_PREFIX = "Bearer";
+  private static final String BEARER_PREFIX = "Bearer";
 
-  public Header createBearerToken(String token) {
+  public static Header createBearerToken(String token) {
     return new BasicHeader(HttpHeaders.AUTHORIZATION, String.format("%s %s", BEARER_PREFIX, token));
   }
 }
