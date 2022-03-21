@@ -52,7 +52,7 @@
 
         <!-- External dependency versions -->
         <httpclient.version>4.5.13</httpclient.version>
-        <jackson.version>2.12.3</jackson.version>
+        <jackson.version>2.13.2</jackson.version>
         <vavr.version>0.10.3</vavr.version>
         <slf4j.version>1.7.30</slf4j.version>
 
