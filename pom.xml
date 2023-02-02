@@ -51,10 +51,10 @@
         <maven-license-plugin.version>2.0.0</maven-license-plugin.version>
 
         <!-- External dependency versions -->
-        <httpclient.version>4.5.13</httpclient.version>
-        <jackson.version>2.12.3</jackson.version>
-        <vavr.version>0.10.3</vavr.version>
-        <slf4j.version>1.7.30</slf4j.version>
+        <httpclient.version>4.5.14</httpclient.version>
+        <jackson.version>2.14.1</jackson.version>
+        <vavr.version>0.10.4</vavr.version>
+        <slf4j.version>2.0.6</slf4j.version>
 
         <!-- Test dependency versions -->
         <junit.version>5.8.1</junit.version>
