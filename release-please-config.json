@@ -1,0 +1,13 @@
+{
+    "bump-minor-pre-major": true,
+    "separate-pull-requests": true,
+    "pull-request-title-pattern": "chore: release ${component} ${version}",
+    "pull-request-header": ":package: Staging a new release",
+    "packages": {
+        ".": {
+            "package-name": "java-http-client",
+            "release-type": "maven",
+            "skip-snapshot": true
+        }
+    }
+}

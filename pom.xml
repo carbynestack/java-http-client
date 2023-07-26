@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>java-http-client</artifactId>
     <groupId>io.carbynestack</groupId>
-    <version>${revision}</version>
+    <version>0.1.0</version>
     <name>Carbyne Stack Java HTTP Client</name>
     <description>Basic Java client used by Carbyne Stack service client implementations.</description>
     <licenses>
@@ -37,7 +37,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <revision>0.1-SNAPSHOT</revision>
         <skip.tests>false</skip.tests>
         <java.version>1.8</java.version>
 
