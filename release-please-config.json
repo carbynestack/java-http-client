@@ -3,11 +3,11 @@
     "separate-pull-requests": true,
     "pull-request-title-pattern": "chore: release ${component} ${version}",
     "pull-request-header": ":package: Staging a new release",
+    "skip-snapshot": true,
     "packages": {
         ".": {
             "package-name": "java-http-client",
-            "release-type": "maven",
-            "skip-snapshot": true
+            "release-type": "maven"
         }
     }
 }
