@@ -43,7 +43,7 @@ jobs:
         if: steps.license-obligations.outputs.OBLIGATIONS_FOUND == 'true'
         with:
           allowUpdates: true
-          artifacts: ${{ env.MODULE }}/license-obligations/*
+          artifacts: license-obligations/*
           artifactErrorsFailBuild: true
           makeLatest: true
           omitBodyDuringUpdate: true
