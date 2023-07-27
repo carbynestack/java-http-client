@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/carbynestack/java-http-client/compare/java-http-client-v0.1.1...java-http-client-v0.1.2) (2023-07-27)
+
+
+### Bug Fixes
+
+* testing release-please ([#21](https://github.com/carbynestack/java-http-client/issues/21)) ([eff58e8](https://github.com/carbynestack/java-http-client/commit/eff58e827f9f18d4f8f4e73987cc348d51c338c9))
+
 ## [0.1.1](https://github.com/carbynestack/java-http-client/compare/java-http-client-v0.1.0...java-http-client-v0.1.1) (2023-07-27)
 
 
