@@ -29,6 +29,8 @@ public class CsResponseHandlerTest {
   private static final Random RANDOM = new Random();
   private static final CsResponseHandler<String, String> RESPONSE_HANDLER =
       CsResponseHandler.of(String.class, String.class);
+  private static final CsResponseHandler<String, byte[]> OCTET_RESPONSE_HANDLER =
+      CsResponseHandler.of(String.class, byte[].class);
 
   private static HttpResponse getHttpResponseForObject(int httpStatus, Object obj) {
     StatusLine statusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, httpStatus, null);
@@ -48,6 +50,16 @@ public class CsResponseHandlerTest {
     return response;
   }
 
+  private static HttpResponse getHttpResponseForByteArr(int httpStatus, byte[] bytes) {
+    StatusLine statusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, httpStatus, null);
+    HttpResponse response = new BasicHttpResponse(statusLine);
+    BasicHttpEntity httpEntity = new BasicHttpEntity();
+    httpEntity.setContent(new ByteArrayInputStream(bytes));
+    httpEntity.setContentLength(bytes.length);
+    response.setEntity(httpEntity);
+    return response;
+  }
+
   @SuppressWarnings("unchecked")
   private static <E extends Throwable> String writeObjectAsJsonString(Object obj) throws E {
     try {
@@ -55,6 +67,17 @@ public class CsResponseHandlerTest {
     } catch (Throwable throwable) {
       throw (E) throwable;
     }
+  }
+
+  @Test
+  public void givenSuccessfulRequestForTupleList_whenHandlingResponse_thenReturnSuccesful()
+      throws IOException {
+    byte[] content = new byte[] {1, 2, 3, 5, 3, 5, 6};
+    int httpStatus = HttpStatus.SC_OK;
+    HttpResponse httpResponse = getHttpResponseForByteArr(httpStatus, content);
+    CsResponseEntity<String, byte[]> actualResponse =
+        OCTET_RESPONSE_HANDLER.handleResponse(httpResponse);
+    assertThat(actualResponse.get()).isEqualTo(content);
   }
 
   @Test
