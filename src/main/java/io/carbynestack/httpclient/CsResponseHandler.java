@@ -36,14 +36,21 @@ public class CsResponseHandler<L, R> implements ResponseHandler<CsResponseEntity
   public CsResponseEntity<L, R> handleResponse(HttpResponse response) throws IOException {
     int status = response.getStatusLine().getStatusCode();
     HttpEntity entity = response.getEntity();
-    String contentString = entity != null ? EntityUtils.toString(entity) : null;
+
     if (status >= 200 && status < 300) {
+      if (this.successType.equals(byte[].class)) {
+        // for TupleLists serialized as Bytes
+        byte[] contentByteArray = entity != null ? EntityUtils.toByteArray(entity) : null;
+        return (CsResponseEntity<L, R>) CsResponseEntity.success(status, contentByteArray);
+      }
+      String contentString = entity != null ? EntityUtils.toString(entity) : null;
       return CsResponseEntity.success(
           status,
           contentString != null && !contentString.isEmpty()
               ? OBJECT_MAPPER.readValue(contentString, successType)
               : null);
     } else {
+      String contentString = entity != null ? EntityUtils.toString(entity) : null;
       log.debug(String.format("Request failed with status code <%s>: %s", status, contentString));
       return CsResponseEntity.failed(
           status,
