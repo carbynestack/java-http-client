@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2021-2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/java-http-client.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -13,10 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 import javax.net.ssl.X509TrustManager;
 import org.apache.http.Header;
@@ -72,17 +69,12 @@ public class CsHttpClient<L> {
           sslConnectionSocketFactory =
               new SSLConnectionSocketFactory(sslContextBuilder.build(), new NoopHostnameVerifier());
         } else {
-          List<Optional<X509TrustManager>> custom = new ArrayList<>();
-          for (File f : withTrustedCertificates) {
-            custom.add(X509TrustManagerUtils.getX509TrustManager(f));
-          }
           List<X509TrustManager> allTrustManagers =
-              Stream.concat(
-                      custom.stream(),
-                      Stream.of(X509TrustManagerUtils.getDefaultX509TrustManager()))
-                  .filter(Optional::isPresent)
-                  .map(Optional::get)
-                  .collect(toList());
+            Stream.of(X509TrustManagerUtils.getX509TrustManager(withTrustedCertificates),
+                      X509TrustManagerUtils.getDefaultX509TrustManager())
+              .filter(Optional::isPresent)
+              .map(Optional::get)
+              .collect(toList());
           SSLContextBuilder sslContextBuilder =
               ExtendedSSLContextBuilder.create(new CompositeX509TrustManager(allTrustManagers));
           sslConnectionSocketFactory = new SSLConnectionSocketFactory(sslContextBuilder.build());

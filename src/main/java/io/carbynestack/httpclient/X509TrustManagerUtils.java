@@ -1,26 +1,29 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2021-2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/java-http-client.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 package io.carbynestack.httpclient;
 
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
 
-final class X509TrustManagerUtils {
+public final class X509TrustManagerUtils {
 
-  static Optional<X509TrustManager> getX509TrustManager(KeyStore keyStore)
+  public static Optional<X509TrustManager> getX509TrustManager(KeyStore keyStore)
       throws NoSuchAlgorithmException, KeyStoreException {
     TrustManagerFactory tmf =
         TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -31,17 +34,23 @@ final class X509TrustManagerUtils {
         .findFirst();
   }
 
-  static Optional<X509TrustManager> getDefaultX509TrustManager()
+  public static Optional<X509TrustManager> getDefaultX509TrustManager()
       throws NoSuchAlgorithmException, KeyStoreException {
     return getX509TrustManager((KeyStore) null);
   }
 
-  static Optional<X509TrustManager> getX509TrustManager(File file)
+  public static Optional<X509TrustManager> getX509TrustManager(List<File> certs)
       throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
-    try (FileInputStream fis = new FileInputStream(file)) {
       KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-      keyStore.load(fis, null);
+      CertificateFactory certificateFactory = CertificateFactory.getInstance("X509");
+      keyStore.load(null);
+      for (File certificate : certs) {
+        X509Certificate x509Certificate =
+                (X509Certificate)
+                        certificateFactory.generateCertificate(Files.newInputStream(certificate.toPath()));
+        keyStore.setCertificateEntry(
+                x509Certificate.getSubjectX500Principal().getName(), x509Certificate);
+      }
       return getX509TrustManager(keyStore);
     }
-  }
 }

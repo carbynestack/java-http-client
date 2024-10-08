@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2021-2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/java-http-client.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.cert.CertificateException;
 import java.util.Collections;
 import java.util.Objects;
 import javax.net.ssl.SSLContext;
@@ -28,8 +29,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class SslValidationIT {
-  private static final String KEY_STORE_A_PATH =
-      Objects.requireNonNull(SslValidationIT.class.getClassLoader().getResource("keyStoreA.jks"))
+  private static final String KEY_STORE_PATH =
+      Objects.requireNonNull(SslValidationIT.class.getClassLoader().getResource("keyStore.jks"))
+          .getPath();
+  private static final String CERTIFICATE_PATH =
+      Objects.requireNonNull(SslValidationIT.class.getClassLoader().getResource("cli_test.pem"))
           .getPath();
   private static final String KEY_STORE_A_PASSWORD = "verysecure";
   private static final String GOOGLE_DIRECTIONS_REST_URI =
@@ -44,7 +48,7 @@ public class SslValidationIT {
               wireMockConfig()
                   .dynamicPort()
                   .dynamicHttpsPort()
-                  .keystorePath(KEY_STORE_A_PATH)
+                  .keystorePath(KEY_STORE_PATH)
                   .keystorePassword(KEY_STORE_A_PASSWORD)
                   .keyManagerPassword(KEY_STORE_A_PASSWORD))
           .build();
@@ -82,7 +86,7 @@ public class SslValidationIT {
     CsHttpClient<String> csHttpClient =
         CsHttpClient.<String>builder()
             .withFailureType(String.class)
-            .withTrustedCertificates(Collections.singletonList(new File(KEY_STORE_A_PATH)))
+            .withTrustedCertificates(Collections.singletonList(new File(CERTIFICATE_PATH)))
             .build();
     assertThat(csHttpClient.getForObject(testUri, String.class)).isEqualTo(SUCCESS_RESPONSE_STRING);
   }
@@ -99,7 +103,7 @@ public class SslValidationIT {
   }
 
   @Test
-  public void givenNonExistingTrustStore_whenBuildingClient_thenThrows() {
+  public void givenNonExistingCertificate_whenBuildingClient_thenThrows() {
     File nonExistingFile = new File("");
     assertThatThrownBy(
             () ->
@@ -108,7 +112,7 @@ public class SslValidationIT {
                     .withTrustedCertificates(Collections.singletonList(nonExistingFile))
                     .build())
         .isExactlyInstanceOf(CsHttpClientException.class)
-        .hasCauseInstanceOf(IOException.class);
+        .hasCauseInstanceOf(CertificateException.class);
   }
 
   @Test
@@ -137,12 +141,12 @@ public class SslValidationIT {
 
   @Test
   public void
-      givenOfficiallyTrustedTargetAndCustomTruststore_whenGettingEntity_thenSucceedWithBadRequest()
+      givenOfficiallyTrustedTargetAndCustomCertificate_whenGettingEntity_thenSucceedWithBadRequest()
           throws CsHttpClientException, URISyntaxException {
     CsHttpClient<GoogleDirectionsResponse> csHttpClient =
         CsHttpClient.<GoogleDirectionsResponse>builder()
             .withFailureType(GoogleDirectionsResponse.class)
-            .withTrustedCertificates(Collections.singletonList(new File(KEY_STORE_A_PATH)))
+            .withTrustedCertificates(Collections.singletonList(new File(CERTIFICATE_PATH)))
             .build();
     CsResponseEntity<GoogleDirectionsResponse, String> csResponseEntity =
         csHttpClient.getForEntity(new URI(GOOGLE_DIRECTIONS_REST_URI), String.class);
