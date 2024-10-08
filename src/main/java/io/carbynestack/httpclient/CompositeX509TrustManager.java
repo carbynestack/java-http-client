@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2021-2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/java-http-client.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -13,10 +13,10 @@ import java.util.Arrays;
 import java.util.List;
 import javax.net.ssl.X509TrustManager;
 
-class CompositeX509TrustManager implements X509TrustManager {
+public class CompositeX509TrustManager implements X509TrustManager {
   private final List<X509TrustManager> managers;
 
-  CompositeX509TrustManager(List<X509TrustManager> managers) {
+  public CompositeX509TrustManager(List<X509TrustManager> managers) {
     this.managers = new ArrayList<>(managers);
   }
 
