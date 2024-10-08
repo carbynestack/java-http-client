@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/carbynestack/java-http-client/compare/java-http-client-v0.1.2...java-http-client-v0.2.0) (2024-10-08)
+
+
+### Features
+
+* use certificates for trust management ([#26](https://github.com/carbynestack/java-http-client/issues/26)) ([e9e5bca](https://github.com/carbynestack/java-http-client/commit/e9e5bcaf13aea191c028ef5585c6bddb1a56248f))
+
 ## [0.1.2](https://github.com/carbynestack/java-http-client/compare/java-http-client-v0.1.1...java-http-client-v0.1.2) (2023-07-27)
 
 
